@@ -91,6 +91,24 @@ public class PenyewaanLapanganGUI {
         dateChooser.setDate(new Date()); // Set tanggal default ke hari ini
         formPanel.add(dateChooser, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        formPanel.add(new JLabel("Harga Futsal (per jam):"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 5;
+        JLabel hargaFutsalLabel = new JLabel("Rp 80.000");
+        formPanel.add(hargaFutsalLabel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        formPanel.add(new JLabel("Harga Basket (per jam):"), gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = 6;
+        JLabel hargaBasketLabel = new JLabel("Rp 70.000");
+        formPanel.add(hargaBasketLabel, gbc);
+
         pesanButton = new JButton("Pesan");
         pesanButton.setForeground(Color.WHITE);
         pesanButton.setBackground(new Color(51, 153, 255));
@@ -103,7 +121,7 @@ public class PenyewaanLapanganGUI {
         });
 
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 7;
         gbc.anchor = GridBagConstraints.EAST;
         formPanel.add(pesanButton, gbc);
 
