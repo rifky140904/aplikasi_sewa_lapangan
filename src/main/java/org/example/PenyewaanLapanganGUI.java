@@ -9,6 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Calendar;
 import java.text.ParseException;
+import java.util.Locale;
 import com.toedter.calendar.JDateChooser;
 
 public class PenyewaanLapanganGUI {
@@ -16,7 +17,6 @@ public class PenyewaanLapanganGUI {
     private JPanel formPanel;
     private JPanel outputPanel;
     private JComboBox<String> lapanganComboBox;
-    private JTextField namaField;
     private JComboBox<String> jamMulaiComboBox;
     private JComboBox<String> jamSelesaiComboBox;
     private JDateChooser dateChooser;
@@ -26,8 +26,11 @@ public class PenyewaanLapanganGUI {
     private JButton previousButton;
     private JLabel tanggalLabel;
     private Calendar currentDay;
+    private int idUser;
 
-    public PenyewaanLapanganGUI() {
+    public PenyewaanLapanganGUI(int userId) {
+        this.idUser = userId;
+
         frame = new JFrame("Aplikasi Penyewaan Lapangan Olahraga");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());
@@ -39,31 +42,40 @@ public class PenyewaanLapanganGUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        String fullName = getFullNameForUserId(userId); // Ganti 1 dengan id pengguna yang diinginkan
+        JLabel welcomeLabel = new JLabel("Selamat Datang " + fullName + " di Aplikasi Sewa Lapangan");
+        welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 0;
+        gbc.gridwidth = 2; // Menggunakan dua kolom untuk judul
+        formPanel.add(welcomeLabel, gbc);
+
+        gbc.gridwidth = 1;
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         formPanel.add(new JLabel("Pilih Lapangan:"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 0;
+        gbc.gridy = 2;
         lapanganComboBox = new JComboBox<>();
         loadLapangan();
         formPanel.add(lapanganComboBox, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = 3;
         formPanel.add(new JLabel("Nama Penyewa:"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 1;
-        namaField = new JTextField(20);
-        formPanel.add(namaField, gbc);
+        gbc.gridy = 3;
+        JLabel fullNameLabel = new JLabel(fullName);
+        formPanel.add(fullNameLabel, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 4;
         formPanel.add(new JLabel("Jam Mulai:"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 2;
+        gbc.gridy = 4;
         jamMulaiComboBox = new JComboBox<>();
         for (int i = 7; i <= 21; i++) {
             jamMulaiComboBox.addItem(String.format("%02d:00", i));
@@ -72,40 +84,40 @@ public class PenyewaanLapanganGUI {
         formPanel.add(jamMulaiComboBox, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = 5;
         formPanel.add(new JLabel("Jam Selesai:"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 3;
+        gbc.gridy = 5;
         jamSelesaiComboBox = new JComboBox<>();
         updateJamSelesaiComboBox();
         formPanel.add(jamSelesaiComboBox, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = 6;
         formPanel.add(new JLabel("Tanggal Pemesanan:"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 4;
+        gbc.gridy = 6;
         dateChooser = new JDateChooser();
         dateChooser.setDate(new Date()); // Set tanggal default ke hari ini
         formPanel.add(dateChooser, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 7;
         formPanel.add(new JLabel("Harga Futsal (per jam):"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 5;
+        gbc.gridy = 7;
         JLabel hargaFutsalLabel = new JLabel("Rp 80.000");
         formPanel.add(hargaFutsalLabel, gbc);
 
         gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridy = 8;
         formPanel.add(new JLabel("Harga Basket (per jam):"), gbc);
 
         gbc.gridx = 1;
-        gbc.gridy = 6;
+        gbc.gridy = 8;
         JLabel hargaBasketLabel = new JLabel("Rp 70.000");
         formPanel.add(hargaBasketLabel, gbc);
 
@@ -120,8 +132,9 @@ public class PenyewaanLapanganGUI {
             }
         });
 
+
         gbc.gridx = 1;
-        gbc.gridy = 7;
+        gbc.gridy = 9;
         gbc.anchor = GridBagConstraints.EAST;
         formPanel.add(pesanButton, gbc);
 
@@ -153,6 +166,7 @@ public class PenyewaanLapanganGUI {
         outputPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         frame.add(outputPanel, BorderLayout.CENTER);
+        frame.add(formPanel, BorderLayout.NORTH);
 
         frame.pack();
         frame.setVisible(true);
@@ -163,6 +177,23 @@ public class PenyewaanLapanganGUI {
         // Menampilkan daftar penyewa saat aplikasi pertama kali dijalankan
         tampilkanPenyewa();
     }
+
+    private String getFullNameForUserId(int userId) {
+        String fullName = "";
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "SELECT full_name FROM user WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                fullName = rs.getString("full_name");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return fullName;
+    }
+
 
     private void loadLapangan() {
         try (Connection conn = DatabaseConnection.getConnection()) {
@@ -188,12 +219,12 @@ public class PenyewaanLapanganGUI {
 
     private void pesanLapangan() {
         String lapangan = (String) lapanganComboBox.getSelectedItem();
-        String namaPenyewa = namaField.getText();
+        int idUser = this.idUser;
         String jamMulaiStr = (String) jamMulaiComboBox.getSelectedItem();
         String jamSelesaiStr = (String) jamSelesaiComboBox.getSelectedItem();
         Date tanggal = dateChooser.getDate();
 
-        if (lapangan.isEmpty() || namaPenyewa.isEmpty() || jamMulaiStr.isEmpty() || jamSelesaiStr.isEmpty() || tanggal == null) {
+        if (lapangan.isEmpty() || jamMulaiStr.isEmpty() || jamSelesaiStr.isEmpty() || tanggal == null) {
             JOptionPane.showMessageDialog(frame, "Mohon lengkapi semua kolom pemesanan.", "Peringatan", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -203,27 +234,28 @@ public class PenyewaanLapanganGUI {
             java.sql.Time jamMulai = new java.sql.Time(sdf.parse(jamMulaiStr).getTime());
             java.sql.Time jamSelesai = new java.sql.Time(sdf.parse(jamSelesaiStr).getTime());
 
-            if (isPenyewaAda(new java.sql.Date(tanggal.getTime()), jamMulai, jamSelesai, lapangan)) {
-                JOptionPane.showMessageDialog(frame, "Lapangan sudah dipesan pada waktu tersebut.", "Peringatan", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
             int jamSewa = jamSelesai.getHours() - jamMulai.getHours();
             double hargaPerJam = getHargaPerJam(lapangan);
             double totalHarga = jamSewa * hargaPerJam;
 
             String idLapangan = getLapanganId(lapangan);
 
+            // Check if the renter already exists for the given time and field
+            if (isPenyewaAda(new java.sql.Date(tanggal.getTime()), jamMulai, jamSelesai, lapangan)) {
+                JOptionPane.showMessageDialog(frame, "Lapangan sudah dipesan pada waktu tersebut.", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             try (Connection conn = DatabaseConnection.getConnection()) {
-                String query = "INSERT INTO pemesanan (id_lapangan, nama_penyewa, tanggal, jam_mulai, jam_selesai, jam_sewa, total_harga) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                String query = "INSERT INTO pemesanan (id_lapangan, id_user, jam_sewa, total_harga, tanggal, jam_mulai, jam_selesai) VALUES (?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement stmt = conn.prepareStatement(query);
                 stmt.setString(1, idLapangan);
-                stmt.setString(2, namaPenyewa);
-                stmt.setDate(3, new java.sql.Date(tanggal.getTime()));
-                stmt.setTime(4, jamMulai);
-                stmt.setTime(5, jamSelesai);
-                stmt.setInt(6, jamSewa);
-                stmt.setDouble(7, totalHarga);
+                stmt.setInt(2, idUser);
+                stmt.setInt(3, jamSewa);
+                stmt.setDouble(4, totalHarga);
+                stmt.setDate(5, new java.sql.Date(tanggal.getTime()));
+                stmt.setTime(6, jamMulai);
+                stmt.setTime(7, jamSelesai);
                 stmt.executeUpdate();
                 JOptionPane.showMessageDialog(frame, "Pemesanan berhasil disimpan.\nTotal Sewa: " + jamSewa + " jam\nTotal Harga: " + totalHarga, "Informasi", JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e) {
@@ -242,13 +274,14 @@ public class PenyewaanLapanganGUI {
 
         Date currentDate = currentDay.getTime();
         java.sql.Date sqlDate = new java.sql.Date(currentDate.getTime());
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, dd MMMM yyyy");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEEE, dd MMMM yyyy", new Locale("id"));
         tanggalLabel.setText(dateFormat.format(currentDate));
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT l.nama AS lapangan, p.nama_penyewa, p.jam_mulai, p.jam_selesai, p.jam_sewa, p.total_harga " +
+            String query = "SELECT l.nama AS lapangan, u.full_name AS nama_penyewa, p.jam_mulai, p.jam_selesai, p.jam_sewa, p.total_harga " +
                     "FROM pemesanan p " +
                     "JOIN lapangan l ON p.id_lapangan = l.id " +
+                    "JOIN user u ON p.id_user = u.id " +
                     "WHERE p.tanggal = ?";
             PreparedStatement stmt = conn.prepareStatement(query);
             stmt.setDate(1, sqlDate);
@@ -280,6 +313,7 @@ public class PenyewaanLapanganGUI {
             e.printStackTrace();
         }
     }
+
 
     private void nextDay() {
         currentDay.add(Calendar.DAY_OF_MONTH, 1);
