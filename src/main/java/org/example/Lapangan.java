@@ -5,13 +5,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-abstract class Lapangan {
-    protected String id;
-    protected String nama;
+public abstract class Lapangan {
+    private String id;
+    private String nama;
+    private double hargaPerJam;
 
-    public Lapangan(String id, String nama) {
+    public Lapangan(String id, String nama, double hargaPerJam) {
         this.id = id;
         this.nama = nama;
+        this.hargaPerJam = hargaPerJam;
     }
 
     public String getId() {
@@ -22,7 +24,14 @@ abstract class Lapangan {
         return nama;
     }
 
-    public abstract double getHargaPerJam();
+    public double getHargaPerJam() {
+        return hargaPerJam;
+    }
+
+    @Override
+    public String toString() {
+        return nama;
+    }
 
     public abstract void displayInfo();
 
@@ -52,39 +61,33 @@ abstract class Lapangan {
 }
 
 class LapanganBasket extends Lapangan {
-    private double hargaPerJam;
-
     public LapanganBasket(String id, String nama, double hargaPerJam) {
-        super(id, nama);
-        this.hargaPerJam = hargaPerJam;
-    }
-
-    @Override
-    public double getHargaPerJam() {
-        return hargaPerJam;
+        super(id, nama, hargaPerJam);
     }
 
     @Override
     public void displayInfo() {
-        System.out.println("Lapangan Basket - ID: " + id + ", Nama: " + nama + ", Harga per jam: Rp" + hargaPerJam);
+        System.out.println("Lapangan Basket - ID: " + getId() + ", Nama: " + getNama() + ", Harga per jam: Rp" + getHargaPerJam());
+    }
+
+    @Override
+    public String toString() {
+        return getNama();
     }
 }
 
 class LapanganFutsal extends Lapangan {
-    private double hargaPerJam;
-
     public LapanganFutsal(String id, String nama, double hargaPerJam) {
-        super(id, nama);
-        this.hargaPerJam = hargaPerJam;
-    }
-
-    @Override
-    public double getHargaPerJam() {
-        return hargaPerJam;
+        super(id, nama, hargaPerJam);
     }
 
     @Override
     public void displayInfo() {
-        System.out.println("Lapangan Futsal - ID: " + id + ", Nama: " + nama + ", Harga per jam: Rp" + hargaPerJam);
+        System.out.println("Lapangan Futsal - ID: " + getId() + ", Nama: " + getNama() + ", Harga per jam: Rp" + getHargaPerJam());
+    }
+
+    @Override
+    public String toString() {
+        return getNama();
     }
 }

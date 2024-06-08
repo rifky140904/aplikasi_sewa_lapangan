@@ -20,7 +20,7 @@ public class RegisterFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel panel = new JPanel(new GridLayout(5, 2));
+        JPanel panel = new JPanel(new GridLayout(6, 2));
         JLabel usernameLabel = new JLabel("Username:");
         JLabel passwordLabel = new JLabel("Password:");
         JLabel fullNameLabel = new JLabel("Full Name:");
@@ -30,6 +30,7 @@ public class RegisterFrame extends JFrame {
         fullNameField = new JTextField();
         roleComboBox = new JComboBox<>(new String[]{"user"});
         JButton registerButton = new JButton("Register");
+        JButton backButton = new JButton("Back to Login"); // Tombol kembali ke frame login
 
         panel.add(usernameLabel);
         panel.add(usernameField);
@@ -41,6 +42,7 @@ public class RegisterFrame extends JFrame {
         panel.add(roleComboBox);
         panel.add(new JLabel());
         panel.add(registerButton);
+        panel.add(backButton); // Menambahkan tombol "Back" ke panel
 
         add(panel);
 
@@ -64,6 +66,14 @@ public class RegisterFrame extends JFrame {
                 }
             }
         });
+
+        backButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose(); // Tutup frame register
+                showLoginForm(); // Tampilkan kembali frame login
+            }
+        });
     }
 
     private boolean registerUser(String username, String password, String fullName, String role) {
@@ -83,12 +93,7 @@ public class RegisterFrame extends JFrame {
     }
 
     private void showLoginForm() {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                LoginFrame loginFrame = new LoginFrame();
-                loginFrame.setVisible(true);
-            }
-        });
+        LoginFrame loginFrame = new LoginFrame();
+        loginFrame.setVisible(true);
     }
 }

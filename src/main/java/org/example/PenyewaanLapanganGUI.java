@@ -16,11 +16,12 @@ public class PenyewaanLapanganGUI {
     private JFrame frame;
     private JPanel formPanel;
     private JPanel outputPanel;
-    private JComboBox<String> lapanganComboBox;
+    private JComboBox<Lapangan> lapanganComboBox;
     private JComboBox<String> jamMulaiComboBox;
     private JComboBox<String> jamSelesaiComboBox;
     private JDateChooser dateChooser;
     private JButton pesanButton;
+    private JButton logoutButton;
     private JTable table;
     private JButton nextButton;
     private JButton previousButton;
@@ -132,11 +133,21 @@ public class PenyewaanLapanganGUI {
             }
         });
 
-
         gbc.gridx = 1;
         gbc.gridy = 9;
         gbc.anchor = GridBagConstraints.EAST;
         formPanel.add(pesanButton, gbc);
+
+        logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                logout();
+            }
+        });
+        gbc.gridx = 2;
+        gbc.gridy = 2;
+        formPanel.add(logoutButton, gbc);
 
         frame.add(formPanel, BorderLayout.NORTH);
 
@@ -194,14 +205,16 @@ public class PenyewaanLapanganGUI {
         return fullName;
     }
 
-
     private void loadLapangan() {
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT nama FROM lapangan";
+            String query = "SELECT id FROM lapangan";
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                lapanganComboBox.addItem(rs.getString("nama"));
+                Lapangan lapangan = Lapangan.getLapanganById(rs.getString("id"));
+                if (lapangan != null) {
+                    lapanganComboBox.addItem(lapangan);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -218,13 +231,13 @@ public class PenyewaanLapanganGUI {
     }
 
     private void pesanLapangan() {
-        String lapangan = (String) lapanganComboBox.getSelectedItem();
+        Lapangan lapangan = (Lapangan) lapanganComboBox.getSelectedItem();
         int idUser = this.idUser;
         String jamMulaiStr = (String) jamMulaiComboBox.getSelectedItem();
         String jamSelesaiStr = (String) jamSelesaiComboBox.getSelectedItem();
         Date tanggal = dateChooser.getDate();
 
-        if (lapangan.isEmpty() || jamMulaiStr.isEmpty() || jamSelesaiStr.isEmpty() || tanggal == null) {
+        if (lapangan == null || jamMulaiStr.isEmpty() || jamSelesaiStr.isEmpty() || tanggal == null) {
             JOptionPane.showMessageDialog(frame, "Mohon lengkapi semua kolom pemesanan.", "Peringatan", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -235,13 +248,12 @@ public class PenyewaanLapanganGUI {
             java.sql.Time jamSelesai = new java.sql.Time(sdf.parse(jamSelesaiStr).getTime());
 
             int jamSewa = jamSelesai.getHours() - jamMulai.getHours();
-            double hargaPerJam = getHargaPerJam(lapangan);
+            double hargaPerJam = lapangan.getHargaPerJam();
             double totalHarga = jamSewa * hargaPerJam;
 
-            String idLapangan = getLapanganId(lapangan);
+            String idLapangan = lapangan.getId();
 
-            // Check if the renter already exists for the given time and field
-            if (isPenyewaAda(new java.sql.Date(tanggal.getTime()), jamMulai, jamSelesai, lapangan)) {
+            if (isPenyewaAda(new java.sql.Date(tanggal.getTime()), jamMulai, jamSelesai, lapangan.getNama())) {
                 JOptionPane.showMessageDialog(frame, "Lapangan sudah dipesan pada waktu tersebut.", "Peringatan", JOptionPane.WARNING_MESSAGE);
                 return;
             }
@@ -314,7 +326,6 @@ public class PenyewaanLapanganGUI {
         }
     }
 
-
     private void nextDay() {
         currentDay.add(Calendar.DAY_OF_MONTH, 1);
         tampilkanPenyewa();
@@ -345,33 +356,9 @@ public class PenyewaanLapanganGUI {
         return false;
     }
 
-    private double getHargaPerJam(String lapangan) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT harga_per_jam FROM lapangan WHERE nama = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, lapangan);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getDouble("harga_per_jam");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return 0;
-    }
-
-    private String getLapanganId(String lapangan) {
-        try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT id FROM lapangan WHERE nama = ?";
-            PreparedStatement stmt = conn.prepareStatement(query);
-            stmt.setString(1, lapangan);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("id");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+    private void logout() {
+        frame.dispose();
+        LoginFrame loginFrame = new LoginFrame();
+        loginFrame.setVisible(true);
     }
 }
