@@ -41,7 +41,12 @@ public class LoginFrame extends JFrame {
                 String password = new String(passwordField.getPassword());
                 User user = User.getUserByUsername(username);
                 if (user != null && user.getPassword().equals(password)) {
-                    openPenyewaanLapanganGUI(user.getId());
+                    if (user.getRole().equals("admin")) {
+                        openAdminFrame();
+                    } else {
+                        openPenyewaanLapanganGUI(user.getId());
+                    }
+                    dispose();
                 } else {
                     JOptionPane.showMessageDialog(LoginFrame.this, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
@@ -66,9 +71,20 @@ public class LoginFrame extends JFrame {
         });
     }
 
+    private void openAdminFrame() {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new AdminFrame().setVisible(true);
+                dispose();
+            }
+        });
+    }
+
     private void openRegisterFrame() {
         RegisterFrame registerFrame = new RegisterFrame();
         registerFrame.setVisible(true);
         dispose();
     }
 }
+

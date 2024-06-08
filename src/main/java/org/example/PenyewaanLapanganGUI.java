@@ -43,12 +43,12 @@ public class PenyewaanLapanganGUI {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        String fullName = getFullNameForUserId(userId); // Ganti 1 dengan id pengguna yang diinginkan
+        String fullName = getFullNameForUserId(userId);
         JLabel welcomeLabel = new JLabel("Selamat Datang " + fullName + " di Aplikasi Sewa Lapangan");
         welcomeLabel.setFont(new Font("Arial", Font.BOLD, 16));
         gbc.gridx = 0;
         gbc.gridy = 0;
-        gbc.gridwidth = 2; // Menggunakan dua kolom untuk judul
+        gbc.gridwidth = 2;
         formPanel.add(welcomeLabel, gbc);
 
         gbc.gridwidth = 1;
