@@ -110,7 +110,7 @@ public class PenyewaanLapanganGUI {
 
         gbc.gridx = 1;
         gbc.gridy = 7;
-        JLabel hargaFutsalLabel = new JLabel("Rp 80.000");
+        JLabel hargaFutsalLabel = new JLabel("Rp " + getHargaLapangan("Lapangan Futsal A"));
         formPanel.add(hargaFutsalLabel, gbc);
 
         gbc.gridx = 0;
@@ -119,7 +119,7 @@ public class PenyewaanLapanganGUI {
 
         gbc.gridx = 1;
         gbc.gridy = 8;
-        JLabel hargaBasketLabel = new JLabel("Rp 70.000");
+        JLabel hargaBasketLabel = new JLabel("Rp " + getHargaLapangan("Lapangan Basket A"));
         formPanel.add(hargaBasketLabel, gbc);
 
         pesanButton = new JButton("Pesan");
@@ -187,6 +187,23 @@ public class PenyewaanLapanganGUI {
 
         // Menampilkan daftar penyewa saat aplikasi pertama kali dijalankan
         tampilkanPenyewa();
+    }
+
+    private double getHargaLapangan(String namaLapangan) {
+        double harga = 0.0;
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "SELECT harga_per_jam FROM lapangan WHERE nama = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, namaLapangan);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                harga = rs.getDouble("harga_per_jam");
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Gagal mengambil harga lapangan!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return harga;
     }
 
     private String getFullNameForUserId(int userId) {
