@@ -180,7 +180,18 @@ public class AdminFrame extends JFrame {
     }
 
     private void updateHargaLapangan(String lapanganName, double hargaPerJam) {
-        
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "UPDATE lapangan SET harga_per_jam = ? WHERE nama = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setDouble(1, hargaPerJam);
+            stmt.setString(2, lapanganName);
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0) {
+                JOptionPane.showMessageDialog(this, "Harga berhasil diupdate!", "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Gagal mengupdate harga!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } 
     }
 
     private void logout() {
