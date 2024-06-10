@@ -16,6 +16,7 @@ public class AdminFrame extends JFrame {
     private JLabel totalPendapatanLabel;
     private JLabel tanggalLabel;
     private Date currentDate;
+    private JComboBox<String> lapanganComboBox;
 
     public AdminFrame() {
         setTitle("Admin Panel");
@@ -73,8 +74,35 @@ public class AdminFrame extends JFrame {
             }
         });
 
-        JPanel footerPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        footerPanel.add(logoutButton);
+        // Menambahkan combo box dan tombol untuk mengubah harga
+        JLabel lapanganLabel = new JLabel("Pilih Lapangan:");
+        lapanganComboBox = new JComboBox<>();
+        loadLapanganNames();
+
+        JLabel hargaLabel = new JLabel("Harga Per Jam:");
+        JTextField hargaField = new JTextField(10);
+        JButton updateHargaButton = new JButton("Update Harga");
+
+        updateHargaButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedLapangan = (String) lapanganComboBox.getSelectedItem();
+                double hargaPerJam = Double.parseDouble(hargaField.getText());
+                updateHargaLapangan(selectedLapangan, hargaPerJam);
+            }
+        });
+
+        JPanel updatePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        updatePanel.add(lapanganLabel);
+        updatePanel.add(lapanganComboBox);
+        updatePanel.add(hargaLabel);
+        updatePanel.add(hargaField);
+        updatePanel.add(updateHargaButton);
+
+        JPanel footerPanel = new JPanel(new BorderLayout());
+        footerPanel.add(logoutButton, BorderLayout.EAST);
+        footerPanel.add(updatePanel, BorderLayout.WEST);
+
         add(footerPanel, BorderLayout.SOUTH);
 
         loadPenyewaData(); // Memuat data penyewa saat frame dimuat
@@ -134,6 +162,25 @@ public class AdminFrame extends JFrame {
             totalPendapatan += (double) model.getValueAt(i, 4); // Kolom indeks 4 adalah kolom total harga
         }
         totalPendapatanLabel.setText(String.format("Rp. %.2f", totalPendapatan));
+    }
+
+    private void loadLapanganNames() {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "SELECT nama FROM lapangan";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                String nama = rs.getString("nama");
+                lapanganComboBox.addItem(nama);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Gagal memuat nama lapangan!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateHargaLapangan() {
+        
     }
 
     private void logout() {
