@@ -191,7 +191,10 @@ public class AdminFrame extends JFrame {
             } else {
                 JOptionPane.showMessageDialog(this, "Gagal mengupdate harga!", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } 
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Terjadi kesalahan saat mengupdate harga!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void logout() {
