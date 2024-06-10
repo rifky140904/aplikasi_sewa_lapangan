@@ -151,7 +151,7 @@ public class PenyewaanLapanganGUI {
 
         frame.add(formPanel, BorderLayout.NORTH);
 
-        table = new JTable(new DefaultTableModel(new Object[]{"Jam", "Lapangan", "Nama Penyewa", "Jam Mulai", "Jam Selesai", "Total Jam", "Total Harga"}, 0));
+        table = new JTable(new DefaultTableModel(new Object[]{"Jam", "Lapangan", "Nama Penyewa", "Jam Mulai", "Jam Selesai", "Total Jam", "Total Harga", "Status Pembayaran"}, 0));
         JScrollPane scrollPane = new JScrollPane(table);
 
         outputPanel = new JPanel(new BorderLayout());
@@ -276,7 +276,7 @@ public class PenyewaanLapanganGUI {
             }
 
             try (Connection conn = DatabaseConnection.getConnection()) {
-                String query = "INSERT INTO pemesanan (id_lapangan, id_user, jam_sewa, total_harga, tanggal, jam_mulai, jam_selesai) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                String query = "INSERT INTO pemesanan (id_lapangan, id_user, jam_sewa, total_harga, tanggal, jam_mulai, jam_selesai, status_pembayaran) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
                 PreparedStatement stmt = conn.prepareStatement(query);
                 stmt.setString(1, idLapangan);
                 stmt.setInt(2, idUser);
@@ -285,6 +285,7 @@ public class PenyewaanLapanganGUI {
                 stmt.setDate(5, new java.sql.Date(tanggal.getTime()));
                 stmt.setTime(6, jamMulai);
                 stmt.setTime(7, jamSelesai);
+                stmt.setString(8, "belum lunas");
                 stmt.executeUpdate();
                 JOptionPane.showMessageDialog(frame, "Pemesanan berhasil disimpan.\nTotal Sewa: " + jamSewa + " jam\nTotal Harga: " + totalHarga, "Informasi", JOptionPane.INFORMATION_MESSAGE);
             } catch (SQLException e) {
@@ -307,7 +308,7 @@ public class PenyewaanLapanganGUI {
         tanggalLabel.setText(dateFormat.format(currentDate));
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT l.nama AS lapangan, u.full_name AS nama_penyewa, p.jam_mulai, p.jam_selesai, p.jam_sewa, p.total_harga " +
+            String query = "SELECT l.nama AS lapangan, u.full_name AS nama_penyewa, p.jam_mulai, p.jam_selesai, p.jam_sewa, p.total_harga, p.status_pembayaran " +
                     "FROM pemesanan p " +
                     "JOIN lapangan l ON p.id_lapangan = l.id " +
                     "JOIN user u ON p.id_user = u.id " +
@@ -325,17 +326,18 @@ public class PenyewaanLapanganGUI {
                 Time jamSelesai = rs.getTime("jam_selesai");
                 int jamSewa = rs.getInt("jam_sewa");
                 double totalHarga = rs.getDouble("total_harga");
+                String statusPembayaran = rs.getString("status_pembayaran");
 
                 for (int hour = jamMulai.getHours(); hour < jamSelesai.getHours(); hour++) {
                     isBooked[hour] = true;
                 }
 
-                model.addRow(new Object[]{jamMulai + " - " + jamSelesai, lapangan, namaPenyewa, jamMulai, jamSelesai, jamSewa, totalHarga});
+                model.addRow(new Object[]{jamMulai + " - " + jamSelesai, lapangan, namaPenyewa, jamMulai, jamSelesai, jamSewa, totalHarga, statusPembayaran});
             }
 
             for (int hour = 7; hour <= 21; hour++) {
                 if (!isBooked[hour]) {
-                    model.addRow(new Object[]{hour + ":00 - " + (hour + 1) + ":00", "Tersedia", "", "", "", "", ""});
+                    model.addRow(new Object[]{hour + ":00 - " + (hour + 1) + ":00", "Tersedia", "", "", "", "", "", ""});
                 }
             }
         } catch (SQLException e) {
