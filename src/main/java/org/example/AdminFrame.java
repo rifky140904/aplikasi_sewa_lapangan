@@ -179,7 +179,7 @@ public class AdminFrame extends JFrame {
         }
     }
 
-    private void updateHargaLapangan() {
+    private void updateHargaLapangan(String lapanganName, double hargaPerJam) {
         
     }
 
