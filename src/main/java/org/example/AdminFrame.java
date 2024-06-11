@@ -126,9 +126,9 @@ public class AdminFrame extends JFrame {
     }
 
     private void loadPenyewaData() {
-        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nama Lapangan", "Username", "Jam Sewa", "Total Harga", "Tanggal", "Range Jam"}, 0);
+        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Nama Lapangan", "Username", "Jam Sewa", "Total Harga", "Tanggal", "Range Jam", "Status Pembayaran"}, 0);
         try (Connection conn = DatabaseConnection.getConnection()) {
-            String query = "SELECT p.id, l.nama, u.username, p.jam_sewa, p.total_harga, p.tanggal, p.jam_mulai, p.jam_selesai " +
+            String query = "SELECT p.id, l.nama, u.username, p.jam_sewa, p.total_harga, p.tanggal, p.jam_mulai, p.jam_selesai, p.status_pembayaran " +
                     "FROM pemesanan p " +
                     "JOIN lapangan l ON p.id_lapangan = l.id " +
                     "JOIN user u ON p.id_user = u.id " +
@@ -145,21 +145,38 @@ public class AdminFrame extends JFrame {
                 Date tanggal = rs.getDate("tanggal");
                 Time jamMulai = rs.getTime("jam_mulai");
                 Time jamSelesai = rs.getTime("jam_selesai");
+                String statusPembayaran = rs.getString("status_pembayaran");
 
-                model.addRow(new Object[]{id, namaLapangan, username, jamSewa, totalHarga, new SimpleDateFormat("yyyy-MM-dd").format(tanggal), jamMulai + " - " + jamSelesai});
+                model.addRow(new Object[]{id, namaLapangan, username, jamSewa, totalHarga, new SimpleDateFormat("yyyy-MM-dd").format(tanggal), jamMulai + " - " + jamSelesai, statusPembayaran});
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Gagal memuat data penyewa!", "Error", JOptionPane.ERROR_MESSAGE);
         }
         penyewaTable.setModel(model);
+
+        penyewaTable.getColumnModel().getColumn(7).setCellEditor(new DefaultCellEditor(new JComboBox<>(new String[]{"sudah lunas", "belum lunas"})));
+
+        penyewaTable.getModel().addTableModelListener(e -> {
+            int row = e.getFirstRow();
+            int column = e.getColumn();
+            if (column == 7) { // Kolom "Status Pembayaran"
+                int id = (int) penyewaTable.getValueAt(row, 0);
+                String newStatus = (String) penyewaTable.getValueAt(row, column);
+                updateStatusPembayaran(id, newStatus);
+                hitungTotalPendapatan(); // Recalculate total after status change
+            }
+        });
     }
 
     private void hitungTotalPendapatan() {
         double totalPendapatan = 0.0;
         DefaultTableModel model = (DefaultTableModel) penyewaTable.getModel();
         for (int i = 0; i < model.getRowCount(); i++) {
-            totalPendapatan += (double) model.getValueAt(i, 4); // Kolom indeks 4 adalah kolom total harga
+            String statusPembayaran = (String) model.getValueAt(i, 7); // Kolom indeks 7 adalah kolom status pembayaran
+            if ("sudah lunas".equals(statusPembayaran)) {
+                totalPendapatan += (double) model.getValueAt(i, 4); // Kolom indeks 4 adalah kolom total harga
+            }
         }
         totalPendapatanLabel.setText(String.format("Rp. %.2f", totalPendapatan));
     }
@@ -194,6 +211,22 @@ public class AdminFrame extends JFrame {
         } catch (SQLException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(this, "Terjadi kesalahan saat mengupdate harga!", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void updateStatusPembayaran(int id, String status) {
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            String query = "UPDATE pemesanan SET status_pembayaran = ? WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(query);
+            stmt.setString(1, status);
+            stmt.setInt(2, id);
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows == 0) {
+                JOptionPane.showMessageDialog(this, "Gagal mengupdate status pembayaran!", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Terjadi kesalahan saat mengupdate status pembayaran!", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
