@@ -16,33 +16,73 @@ public class RegisterFrame extends JFrame {
 
     public RegisterFrame() {
         setTitle("Register");
-        setSize(300, 200);
+        setSize(800, 600); // Set the same size as AdminFrame
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setLocationRelativeTo(null); // Centers the frame on the screen
 
-        JPanel panel = new JPanel(new GridLayout(6, 2));
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+
+        JLabel titleLabel = new JLabel("Register Akun Aplikasi Penyewaan Lapangan");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        panel.add(titleLabel, gbc);
+
         JLabel usernameLabel = new JLabel("Username:");
-        JLabel passwordLabel = new JLabel("Password:");
-        JLabel fullNameLabel = new JLabel("Full Name:");
-        JLabel roleLabel = new JLabel("Role:");
-        usernameField = new JTextField();
-        passwordField = new JPasswordField();
-        fullNameField = new JTextField();
-        roleComboBox = new JComboBox<>(new String[]{"user"});
-        JButton registerButton = new JButton("Register");
-        JButton backButton = new JButton("Back to Login"); // Tombol kembali ke frame login
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.gridwidth = 1;
+        panel.add(usernameLabel, gbc);
 
-        panel.add(usernameLabel);
-        panel.add(usernameField);
-        panel.add(passwordLabel);
-        panel.add(passwordField);
-        panel.add(fullNameLabel);
-        panel.add(fullNameField);
-        panel.add(roleLabel);
-        panel.add(roleComboBox);
-        panel.add(new JLabel());
-        panel.add(registerButton);
-        panel.add(backButton); // Menambahkan tombol "Back" ke panel
+        usernameField = new JTextField(20);
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        panel.add(usernameField, gbc);
+
+        JLabel passwordLabel = new JLabel("Password:");
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        panel.add(passwordLabel, gbc);
+
+        passwordField = new JPasswordField(20);
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        panel.add(passwordField, gbc);
+
+        JLabel fullNameLabel = new JLabel("Full Name:");
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        panel.add(fullNameLabel, gbc);
+
+        fullNameField = new JTextField(20);
+        gbc.gridx = 1;
+        gbc.gridy = 3;
+        panel.add(fullNameField, gbc);
+
+        JLabel roleLabel = new JLabel("Role:");
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        panel.add(roleLabel, gbc);
+
+        roleComboBox = new JComboBox<>(new String[]{"user"});
+        gbc.gridx = 1;
+        gbc.gridy = 4;
+        panel.add(roleComboBox, gbc);
+
+        JButton registerButton = new JButton("Register");
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        panel.add(registerButton, gbc);
+
+        JButton cancelButton = new JButton("Cancel");
+        gbc.gridx = 0;
+        gbc.gridy = 6;
+        gbc.gridwidth = 2;
+        panel.add(cancelButton, gbc);
 
         add(panel);
 
@@ -67,11 +107,11 @@ public class RegisterFrame extends JFrame {
             }
         });
 
-        backButton.addActionListener(new ActionListener() {
+        cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dispose(); // Tutup frame register
-                showLoginForm(); // Tampilkan kembali frame login
+                dispose(); // Menutup frame register
+                showLoginForm(); // Kembali ke frame login
             }
         });
     }
@@ -93,7 +133,12 @@ public class RegisterFrame extends JFrame {
     }
 
     private void showLoginForm() {
-        LoginFrame loginFrame = new LoginFrame();
-        loginFrame.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                LoginFrame loginFrame = new LoginFrame();
+                loginFrame.setVisible(true);
+            }
+        });
     }
 }

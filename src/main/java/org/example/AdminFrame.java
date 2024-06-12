@@ -24,7 +24,7 @@ public class AdminFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        currentDate = new Date(); // Set tanggal saat ini
+        currentDate = new Date();
 
         JPanel headerPanel = new JPanel(new BorderLayout());
         JPanel datePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
